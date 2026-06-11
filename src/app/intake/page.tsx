@@ -1,8 +1,18 @@
-export default function IntakePage() {
+import { StorefrontsService } from "@/lib/storefronts/storefronts.service";
+import { IntakeForm } from "@/components/intake-form";
+
+export default async function IntakePage() {
+  const storefronts = await StorefrontsService.list();
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Add Item</h1>
-      <p className="text-muted-foreground mt-1">3-step intake form with AI valuation — coming soon.</p>
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Add Item</h1>
+        <p className="text-muted-foreground text-sm mt-0.5">
+          Submit an item for AI valuation.
+        </p>
+      </div>
+      <IntakeForm storefronts={storefronts} />
     </div>
   );
 }
