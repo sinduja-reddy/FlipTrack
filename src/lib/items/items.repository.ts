@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { ItemFilters, ItemSummary, ItemDetail } from "./items.types";
+import type { ItemFilters, ItemSummary, ItemDetail, CreateItemInput } from "./items.types";
 
 function buildWhere(filters: ItemFilters) {
   const { storefront, category, status, q } = filters;
@@ -42,5 +42,13 @@ export const ItemsRepository = {
 
   async count(filters: ItemFilters): Promise<number> {
     return prisma.item.count({ where: buildWhere(filters) });
+  },
+
+  async create(input: CreateItemInput) {
+    return prisma.item.create({ data: { ...input, status: "PENDING_VALUATION" } as never });
+  },
+
+  async updateStatus(id: string, status: string) {
+    return prisma.item.update({ where: { id }, data: { status: status as never } });
   },
 };

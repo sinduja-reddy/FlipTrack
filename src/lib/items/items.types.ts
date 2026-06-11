@@ -1,3 +1,16 @@
+export type CreateItemInput = {
+  storefrontId: string;
+  sku: string;
+  name: string;
+  category: string;
+  subCategory?: string;
+  brand: string;
+  model: string;
+  condition: string;
+  size?: string;
+  purchasePrice: number;
+};
+
 export type ItemFilters = {
   storefront?: string; // storefront slug
   category?: string;
