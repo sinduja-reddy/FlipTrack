@@ -1,6 +1,6 @@
 import { NotFoundError } from "@/lib/errors";
 import { ItemsRepository } from "./items.repository";
-import { inngest } from "@/../../inngest/client";
+import { inngest } from "../../../inngest/client";
 import type { ItemFilters, CreateItemInput } from "./items.types";
 
 export const ItemsService = {
