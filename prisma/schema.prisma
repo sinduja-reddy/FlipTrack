@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemCategory {
+  SNEAKERS
+  VINYL
+  TRADING_CARDS
+  VINTAGE_ELECTRONICS
+}
+
+enum ItemStatus {
+  PENDING_VALUATION
+  AWAITING_APPROVAL
+  IN_STOCK
+  LISTED
+  SOLD
+}
+
+model Storefront {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  category  ItemCategory
+  items     Item[]
+  createdAt DateTime     @default(now())
+}
+
+model Item {
+  id            String        @id @default(cuid())
+  storefrontId  String
+  storefront    Storefront    @relation(fields: [storefrontId], references: [id])
+  sku           String        @unique
+  name          String
+  category      ItemCategory
+  subCategory   String?
+  brand         String
+  model         String
+  condition     String
+  size          String?
+  purchasePrice Decimal       @db.Decimal(10, 2)
+  listedPrice   Decimal?      @db.Decimal(10, 2)
+  status        ItemStatus    @default(PENDING_VALUATION)
+  valuations    Valuation[]
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Valuation {
+  id            String   @id @default(cuid())
+  itemId        String
+  item          Item     @relation(fields: [itemId], references: [id])
+  inputSnapshot Json
+  aiPrompt      String
+  aiResponse    String
+  suggestedLow  Decimal  @db.Decimal(10, 2)
+  suggestedHigh Decimal  @db.Decimal(10, 2)
+  acceptedValue Decimal? @db.Decimal(10, 2)
+  appraiserNote String?
+  inngestRunId  String
+  modelUsed     String
+  createdAt     DateTime @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  type      String
+  salePrice Decimal  @db.Decimal(10, 2)
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model EventLog {
+  id        String   @id @default(cuid())
+  eventName String
+  payload   Json
+  createdAt DateTime @default(now())
+}
