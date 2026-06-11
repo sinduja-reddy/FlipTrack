@@ -89,8 +89,12 @@ export function IntakeForm({ storefronts }: { storefronts: Storefront[] }) {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to create item");
+        let message = "Failed to create item";
+        try {
+          const data = await res.json();
+          message = data.error ?? message;
+        } catch {}
+        throw new Error(message);
       }
 
       const item = await res.json();

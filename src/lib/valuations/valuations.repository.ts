@@ -23,7 +23,7 @@ export const ValuationsRepository = {
   async findAll() {
     return prisma.valuation.findMany({
       orderBy: { createdAt: "desc" },
-      include: { item: { select: { name: true, sku: true, category: true } } },
+      include: { item: { select: { id: true, name: true, sku: true, category: true } } },
     });
   },
 };

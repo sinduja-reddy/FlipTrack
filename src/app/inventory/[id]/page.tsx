@@ -2,6 +2,7 @@ import { ItemsService } from "@/lib/items/items.service";
 import { notFound } from "next/navigation";
 import { NotFoundError } from "@/lib/errors";
 import Link from "next/link";
+import { AcceptValuation } from "@/components/accept-valuation";
 
 export default async function ItemDetailPage({ params }: PageProps<"/inventory/[id]">) {
   const { id } = await params;
@@ -51,13 +52,13 @@ export default async function ItemDetailPage({ params }: PageProps<"/inventory/[
         {!latestValuation ? (
           <p className="text-sm text-muted-foreground">No valuation yet.</p>
         ) : (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-4 text-sm">
             <div className="flex gap-6">
               <Detail label="Suggested range" value={`$${Number(latestValuation.suggestedLow).toLocaleString()} – $${Number(latestValuation.suggestedHigh).toLocaleString()}`} />
               <Detail label="Accepted value" value={latestValuation.acceptedValue ? `$${Number(latestValuation.acceptedValue).toLocaleString()}` : "—"} />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">AI response</p>
+              <p className="text-xs text-muted-foreground mb-1">AI reasoning</p>
               <p className="text-sm bg-zinc-50 rounded-md p-3 border">{latestValuation.aiResponse}</p>
             </div>
             {latestValuation.appraiserNote && (
@@ -66,6 +67,18 @@ export default async function ItemDetailPage({ params }: PageProps<"/inventory/[
             <p className="text-xs text-muted-foreground">
               Model: {latestValuation.modelUsed} · Run: {latestValuation.inngestRunId}
             </p>
+
+            {item.status === "AWAITING_APPROVAL" && (
+              <>
+                <hr />
+                <AcceptValuation
+                  valuationId={latestValuation.id}
+                  suggestedLow={Number(latestValuation.suggestedLow)}
+                  suggestedHigh={Number(latestValuation.suggestedHigh)}
+                  alreadyAccepted={false}
+                />
+              </>
+            )}
           </div>
         )}
       </div>

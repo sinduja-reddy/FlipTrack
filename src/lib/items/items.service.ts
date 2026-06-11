@@ -17,10 +17,9 @@ export const ItemsService = {
   async create(input: CreateItemInput) {
     const item = await ItemsRepository.create(input);
 
-    await inngest.send({
-      name: "item/intake.submitted",
-      data: { itemId: item.id, category: input.category },
-    });
+    inngest
+      .send({ name: "item/intake.submitted", data: { itemId: item.id, category: input.category } })
+      .catch((err) => console.error("[inngest] failed to send event:", err));
 
     return item;
   },
