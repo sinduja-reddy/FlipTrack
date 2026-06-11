@@ -40,30 +40,47 @@ export default function IntakePendingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Poll every 2s until valuation arrives
   useEffect(() => {
+    let es: EventSource | null = null;
     let cancelled = false;
 
-    async function poll() {
+    async function fetchItem() {
       try {
         const res = await fetch(`/api/items/${id}`);
-        if (!res.ok) return;
+        if (!res.ok || cancelled) return;
         const data: Item = await res.json();
         if (!cancelled) {
           setItem(data);
           setLoading(false);
         }
-        // Keep polling if still pending
-        if (!cancelled && data.status === "PENDING_VALUATION") {
-          setTimeout(poll, 2000);
+        // Already done before we even connected — no need for SSE
+        if (data.status !== "PENDING_VALUATION") {
+          es?.close();
         }
-      } catch {
-        if (!cancelled) setTimeout(poll, 3000);
-      }
+      } catch { /* network error — SSE still open */ }
     }
 
-    poll();
-    return () => { cancelled = true; };
+    // Subscribe first to avoid missing the event between fetch and subscribe
+    es = new EventSource("/api/events/stream");
+    es.onmessage = (e) => {
+      const event = JSON.parse(e.data) as { eventName: string; payload: Record<string, unknown> };
+      if (
+        event.eventName === "valuation/completed" &&
+        event.payload?.itemId === id
+      ) {
+        es?.close();
+        fetchItem(); // fetch the full item now that valuation is saved
+      }
+    };
+    es.onerror = () => es?.close();
+
+    // Fetch initial state (handles page reload after valuation already finished)
+    fetchItem();
+
+    return () => {
+      cancelled = true;
+      es?.close();
+    };
   }, [id]);
 
   const valuation = item?.valuations[0] ?? null;
